@@ -1,12 +1,10 @@
 from datetime import datetime
 
 from aiogram.dispatcher import FSMContext
-from aiogram.types import ChatActions, CallbackQuery
+from aiogram.types import CallbackQuery
 
-from keyboards import DateSelector, StationSelector, TrainsNavigator
+from keyboards import DateSelector, StationSelector, TrainsNavigator, yes_no_keyboard
 from loader import dp
-from services.api import get_trains
-from services.sorter import sorted_trains_by_price
 from utils import MessageBox
 from utils.states import States
 
@@ -94,39 +92,46 @@ async def calendar_selection(callback_query: CallbackQuery, callback_data: dict)
 
 
 @dp.callback_query_handler(DateSelector.data.filter(action=DateSelector.actions.confirm), state=States.select_date)
-async def calendar_selection(callback_query: CallbackQuery, callback_data: dict, state: FSMContext):
+async def calendar_selection(callback_query: CallbackQuery, callback_data: dict):
     print(f"{callback_query.message.from_user.first_name}: {callback_data}")
     user_id = callback_query.from_user.id
 
-    await MessageBox.delete_last(user_id=user_id)
-    wait_message = await callback_query.message.answer(text="Выполнен запрос на выбранную дату, ожидайте...")
-    await ChatActions.typing()
-
     date_ = datetime(day=int(callback_data["day"]), month=int(callback_data["month"]), year=int(callback_data["year"]))
     data = await dp.storage.get_data(user=user_id)
-    trains = await get_trains(
-        code0=data["departure"],
-        code1=data["arrival"],
-        date_=date_,
-    )
+    data["date"] = date_
+    await dp.storage.set_data(user=user_id, data=data)
 
-    await wait_message.delete()
-    if not trains:
-        message_ = await callback_query.message.answer(
-            text="По данному маршруту на выбранную дату не найдено ни одного прямого билета.\n"
-            "Попробуйте выбрать другую дату:",
-            reply_markup=DateSelector.markup(user_id),
-        )
-        MessageBox.put(message=message_, user_id=user_id)
-        await States.select_date.set()
-        return
-    DateSelector.clear(user_id=user_id)
+    await callback_query.message.answer(text="Интересуют ли Вас места для инвалидов?", reply_markup=yes_no_keyboard)
+    await States.waiting_for_disabled.set()
 
-    sorted_trains = sorted_trains_by_price(trains)
-    TrainsNavigator.setup(trains=sorted_trains, user_id=user_id)
-    text, markup = TrainsNavigator.text_and_markup(user_id=user_id)
-    await callback_query.message.answer(text=text, reply_markup=markup)
-    await state.finish()
+    # await MessageBox.delete_last(user_id=user_id)
+    # wait_message = await callback_query.message.answer(text="Выполнен запрос на выбранную дату, ожидайте...")
+    # await ChatActions.typing()
+    #
+    # data = await dp.storage.get_data(user=user_id)
+    # trains = await get_trains(
+    #     code0=data["departure"],
+    #     code1=data["arrival"],
+    #     date_=date_,
+    # )
+    #
+    # await wait_message.delete()
+    # if not trains:
+    #     message_ = await callback_query.message.answer(
+    #         text="По данному маршруту на выбранную дату не найдено ни одного прямого билета.\n"
+    #         "Попробуйте выбрать другую дату:",
+    #         reply_markup=DateSelector.markup(user_id),
+    #     )
+    #     MessageBox.put(message=message_, user_id=user_id)
+    #     await States.select_date.set()
+    #     return
+    # DateSelector.clear(user_id=user_id)
+
+    # sorted_trains = sorted_trains_by_price(trains)
+    # TrainsNavigator.setup(trains=sorted_trains, user_id=user_id)
+    # text, markup = TrainsNavigator.text_and_markup(user_id=user_id)
+    # await callback_query.message.answer(text=text, reply_markup=markup)
+    # await state.finish()
 
 
 @dp.callback_query_handler(

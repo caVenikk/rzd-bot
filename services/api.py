@@ -79,6 +79,7 @@ async def get_trains(code0: int, code1: int, date_: datetime) -> list[Train] | N
             )
             for train in train_dicts
         ]
+
         return trains
     except KeyError:
         return None

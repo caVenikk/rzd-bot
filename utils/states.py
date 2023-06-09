@@ -7,3 +7,4 @@ class States(StatesGroup):
     waiting_for_arrival_station = State()
     select_arrival_station = State()
     select_date = State()
+    waiting_for_disabled = State()
