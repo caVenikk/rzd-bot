@@ -1,5 +1,5 @@
 from aiogram.dispatcher import FSMContext
-from aiogram.types import Message, ChatActions
+from aiogram.types import Message, ChatActions, ReplyKeyboardRemove
 
 from keyboards import StationSelector, DateSelector, TrainsNavigator
 from loader import dp
@@ -35,7 +35,12 @@ async def station_input(message: Message):
 
 @dp.message_handler(text=["Да", "Нет"], state=States.waiting_for_disabled)
 async def disabled_answer(message: Message, state: FSMContext):
+    print(f"{message.from_user.first_name}: {message.text}")
     user_id = message.from_user.id
+
+    remove_keyboard_message = await message.answer("-", reply_markup=ReplyKeyboardRemove())
+    await remove_keyboard_message.delete()
+
     disabled_person = True if message.text == "Да" else False
 
     await MessageBox.delete_last(user_id=user_id)

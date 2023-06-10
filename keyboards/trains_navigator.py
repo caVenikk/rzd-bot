@@ -57,17 +57,17 @@ class _TrainsNavigator:
             if self.__start == 0:
                 markup.add(
                     InlineKeyboardButton(text=" ", callback_data="_"),
-                    InlineKeyboardButton(text="➡️", callback_data=self._data.new(_Actions.next, 0)),
+                    InlineKeyboardButton(text="➡️", callback_data=self._data.new(_Actions.next)),
                 )
             elif self.__end >= len(self.__trains):
                 markup.add(
-                    InlineKeyboardButton(text="⬅️", callback_data=self._data.new(_Actions.prev, 0)),
+                    InlineKeyboardButton(text="⬅️", callback_data=self._data.new(_Actions.prev)),
                     InlineKeyboardButton(text=" ", callback_data="_"),
                 )
             else:
                 markup.add(
-                    InlineKeyboardButton(text="⬅️", callback_data=self._data.new(_Actions.prev, 0)),
-                    InlineKeyboardButton(text="➡️", callback_data=self._data.new(_Actions.next, 0)),
+                    InlineKeyboardButton(text="⬅️", callback_data=self._data.new(_Actions.prev)),
+                    InlineKeyboardButton(text="➡️", callback_data=self._data.new(_Actions.next)),
                 )
         return text, markup
 
@@ -91,7 +91,7 @@ class _TrainsNavigator:
 
 class TrainsNavigator:
     _storage: dict[int, _TrainsNavigator] = dict()
-    data = CallbackData("trains", "action", "train_number")
+    data = CallbackData("trains", "action")
     actions = _Actions()
 
     @classmethod
