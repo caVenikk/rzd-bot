@@ -38,13 +38,12 @@ async def disabled_answer(message: Message, state: FSMContext):
     print(f"{message.from_user.first_name}: {message.text}")
     user_id = message.from_user.id
 
-    remove_keyboard_message = await message.answer("-", reply_markup=ReplyKeyboardRemove())
-    await remove_keyboard_message.delete()
-
     disabled_person = True if message.text == "Да" else False
 
     await MessageBox.delete_last(user_id=user_id)
-    wait_message = await message.answer(text="Выполнен запрос на выбранную дату, ожидайте...")
+    wait_message = await message.answer(
+        text="Выполнен запрос на выбранную дату, ожидайте...", reply_markup=ReplyKeyboardRemove()
+    )
     await ChatActions.typing()
 
     data = await dp.storage.get_data(user=user_id)
